@@ -4,7 +4,11 @@ We all agree that Flappy Bird was a great game. At Realtime we thought it would 
 In a couple of days part of our Realtime Framework team got together to use the Realtime SDKs along with the standard iOS libraries to build a multi-player Flappy Bird style game. 
 
 
-![iOS ScreenShot](http://framework.realtime.co/blog/img/flyingbrands/image2.png) ![iOS ScreenShot](http://framework.realtime.co/blog/img/flyingbrands/image3.png) ![iOS ScreenShot](http://framework.realtime.co/blog/img/flyingbrands/image4.png) 
+![iOS ScreenShot](http://framework.realtime.co/blog/img/flyingbrands/image2.png) 
+
+![iOS ScreenShot](http://framework.realtime.co/blog/img/flyingbrands/image3.png) 
+
+![iOS ScreenShot](http://framework.realtime.co/blog/img/flyingbrands/image4.png) 
 
 
 ## Developer Guide
