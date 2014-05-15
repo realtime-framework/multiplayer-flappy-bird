@@ -112,6 +112,11 @@
 	_nickLabel.shadowColor = TEXT_SHADOW_COLOR;
 	_nickLabel.shadowOffset = CGSizeMake(1.0, 1.0);
 	
+	[_scoreLabel setFont:[UIFont fontWithName:@"Floraless" size:14]];
+	[_scoreLabel setTextColor:TEXT_COLOR];
+	_scoreLabel.shadowColor = TEXT_SHADOW_COLOR;
+	_scoreLabel.shadowOffset = CGSizeMake(1.0, 1.0);
+	
 	[_tweetBtt.titleLabel setFont:[UIFont fontWithName:@"Floraless" size:14]];
 	[_tweetBtt.layer setCornerRadius:4.0];
 	[_pendingBtt.titleLabel setFont:[UIFont fontWithName:@"Floraless" size:14]];
@@ -143,7 +148,13 @@
 	_nickLabel.text = [NSString stringWithFormat:@"Welcome, %@", [[GameData localPlayer] nickname]];
 	[_pendingLabel setText:[NSString stringWithFormat:@"%d", [[GameData localPlayer] challenges]]];
 	[_toastLabel setText:@""];
+	
+	
+	[_bannerWebView setBackgroundColor:[UIColor clearColor]];
+	[_bannerWebView setOpaque:NO];
+	_bannerWebView.delegate = self;
 }
+
 
 
 - (void) viewDidAppear:(BOOL)animated
@@ -206,11 +217,18 @@
             //NSLog(@"Error syncing local player: %@",error.localizedDescription);
         }else{
             [[AppDelegate rootViewController].pendingLabel setText:[NSString stringWithFormat:@"%d", [[GameData localPlayer] challenges]]];
+			[[AppDelegate rootViewController].scoreLabel setText:[NSString stringWithFormat:@"Your score is: %lld", [[GameData localPlayer] score]]];
 		}
     }];
     
+	/*
     _adUnitView = [[AdUnitUIkit alloc] initWithPLaceholder:_imageBanner AndZone:BANNER_Z_ID];
 	[WebSpectatorMobile putAdUnit:_adUnitView];
+	*/
+
+	_adUnitView = [[AdUnitUIkit alloc] initWithPLaceholder:_bannerWebView AndZone:BANNER_Z_ID_2];
+	[WebSpectatorMobile putAdUnit:_adUnitView];
+	
 }
 
 
@@ -334,6 +352,7 @@
 
 
 - (IBAction) directChallenge:(id)sender {
+	
 	
 	if ([_directChallengeTextField.text length] < 3) {
 		
@@ -464,6 +483,7 @@
 		_contentView.transform = CGAffineTransformMakeTranslation(0, -kKEYBOARD_OFFSET);
 	} completion:nil];
 }
+
 
 @end
 

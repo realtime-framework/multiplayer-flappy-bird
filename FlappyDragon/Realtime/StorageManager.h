@@ -7,39 +7,35 @@
 //
 
 
-#define SERVER @"http://ortc-developers.realtime.co/server/2.1"
+#define SERVER @"http://ortc-developers.realtime.co/server/ssl/2.1"
 #define AUTH_TOKEN @"FlyingBrands"
-#define APP_KEY @"[YOUR_REALTIME_APPKEY_HERE]"
-#define CONNECTION_METADATA @""
+#define APP_KEY @"[YOUR_APPLICATION_KEY_HERE]"
+#define CONNECTION_METADATA @"__CONNECTION_METADATA__"
 #define ISCLUSTER 1
 
-// LIST OF REALTIME CLOUD STORAGE TABLES
 //___________________________________________________________
-//  Table DragonScores:
+//  DragonScores (game score by gameName):
 //  - dragonScores		(NSString)	- primary key
 //  - score				(Number)	- secondary key
 //  - nickName			(NSString)	- nickname of the player with highScore
 //  - gameId			(NSString)	- player game id
 
-//  Table DragonPlayers:
-//  - nickName		(NSString)	- primary key
+//  DragonPlayers:
+//  - nickName			(NSString)	- primary key
 //  - gameId		(NSString)	- secondary key
 //  - challenges	(Number)	- challenges pending
 //  - state			(NSString)	- (offline, waiting, playing)
-//  - score 		(Number)	- player score
 
-//	Table DragonStatus:
+//	DragonStatus:
 //  - state			(NSString)	- primary key (offline, waiting, playing) 
 //  - gameId		(NSString)	- secondary key
 //  - challenges	(Number)	- challenges pending
 //  - score			(Number)	- score
 //  - nickName		(NSString)	- player nick name
 
-//  Table DragonChallenges:
+//  DragonChallenges:
 //  - gameId			(NSString)	- player game id
 //  - gameIdB			(NSString)	- opponent player game id
-//	- nickNameA			(NSString)	- Player A name
-//	- nickNameB			(NSString)	- Player B name
 
 
 #define TAB_SCORES @"DragonScores"

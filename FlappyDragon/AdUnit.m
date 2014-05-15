@@ -41,6 +41,14 @@
 	[self doesNotRecognizeSelector:_cmd];
 }
 
+- (void) loadScript:(NSString *) script {
+	[self doesNotRecognizeSelector:_cmd];
+}
+
+- (void) loadHTML:(NSString *)htmlString {
+	[self doesNotRecognizeSelector:_cmd];
+}
+
 - (void) destroy{
     [self doesNotRecognizeSelector:_cmd];
 }

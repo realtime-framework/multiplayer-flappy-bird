@@ -12,8 +12,9 @@
 
 @interface AdUnitUIkit : AdUnit
 
-- (id) initWithPLaceholder:(UIImageView *) adUnit AndZone:(int) zone;
+- (id) initWithPLaceholder:(UIView *) adUnit AndZone:(int) zone;
 - (void) changeBanner:(NSString *) bannerURL;
-
+- (void) loadScript:(NSString *) script;
+- (void) loadHTML:(NSString *)htmlString;
 
 @end

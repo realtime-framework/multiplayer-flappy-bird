@@ -18,7 +18,6 @@
 #define CONNECTION_METADATA @"__CONNECTION_METADATA__"
 
 #define WS_VERSION @"2.2"
-
 #define WS_SESSION_ID_KEY @"WS_SESSION_ID_KEY"
 #define WS_CONTEXT_ID_KEY @"WS_CONTEXT_ID_KEY"
 
@@ -286,14 +285,14 @@ static int timerCounter;
 		if ([messagingClient isConnected]) {
 			
 			[messagingClient subscribe:channelName subscribeOnReconnected:YES onMessage:^(OrtcClient *ortc, NSString *channel, NSString *message) {
-				//NSLog(@"RECEIVE: %@ | %@", message, channel);
+				NSLog(@"RECEIVE: %@ | %@", message, channel);
 				[WebSpectatorClient jsonParse:message :^(NSDictionary *jsonDict, NSError *error) {
 					if(error == nil) {
 						
 						NSString* operation = [jsonDict objectForKey:@"a"];
 						
 						if ([operation isEqualToString:@"cbresp"]) {
-							[WebSpectatorClient processCBResponse:[jsonDict objectForKey:@"d"]];
+							[WebSpectatorClient processCBResponse:[jsonDict objectForKey:@"d"] Msg:message];
 						}
 						if ([operation isEqualToString:@"cb"]) {
 							[WebSpectatorClient processCB:jsonDict];
@@ -314,7 +313,7 @@ static int timerCounter;
 	@try {
 		if(messagingClient != nil && [messagingClient isConnected]){
 			
-			//NSLog(@"SEND: %@ : %@", channel, msg);
+			NSLog(@"SEND: %@ : %@", channel, msg);
             [messagingClient send:channel message:msg];
         }
 		else{
@@ -461,14 +460,20 @@ static int timerCounter;
 	NSString *zoneid = [NSString stringWithFormat:@"%d", adUnit.zoneId];
 	
 	NSString *bannerid = @"";
+	/*
 	if ([adUnit.bannerID length] > 0) {
 		bannerid = adUnit.bannerID;
 	}
-	
 	bannerid = @"";
+	*/
 	
 	NSString *script = @"";
+	
 	NSString *mode = @"raw";
+	if (adUnit.zoneId == BANNER_Z_ID_2) {
+		mode = @"";
+	}
+	
 	NSString *meta = @"";
 	NSString *state = @"1";
 	NSString *ip = @"";
@@ -481,11 +486,10 @@ static int timerCounter;
 	
 	//send Message
 	[WebSpectatorClient sendMessage:msgRequest ToChannel:wsChannel_send];
-	
 }
 
 
-+ (void) processCBResponse:(NSDictionary *) userInfo {
++ (void) processCBResponse:(NSDictionary *) userInfo Msg:(NSString *) message {
 	
 	NSString *zoneID = [userInfo objectForKey:@"zone"];
 	NSString *bannerID = @"";
@@ -493,50 +497,113 @@ static int timerCounter;
 	NSString *bannerHeight = @"";
 	NSString *bannerURL = @"";
 	NSString *campaignID = @"";
-	
+	NSString *script = @"";
+	BOOL isScript = NO;
+	BOOL isDIV = NO;
 	CGSize bannerSize = CGSizeZero;
 	
 	if ([[userInfo objectForKey:@"content"] length] > 0) {
 		
-		NSArray *responseContent = [[userInfo objectForKey:@"content"] componentsSeparatedByString:@"|"];
-		
-		if ([responseContent count] > 0) {
+		if (![[[userInfo objectForKey:@"content"] substringToIndex:8] isEqualToString:@"<script>"]) {
+			NSArray *responseContent = [[userInfo objectForKey:@"content"] componentsSeparatedByString:@"|"];
 			
-			float floatBannerWidth = 0;
-			float floatBannerHeight = 0;
-			
-			if ([responseContent objectAtIndex:0]) {
+			if ([responseContent count] > 0) {
+				
+				float floatBannerWidth = 0;
+				float floatBannerHeight = 0;
+				
 				bannerID = [responseContent objectAtIndex:0];
+				
+				if ([responseContent count] > 1) {
+					bannerWidth = [responseContent objectAtIndex:1];
+					floatBannerWidth = [bannerWidth floatValue];
+				}
+				if ([responseContent count] > 2) {
+					bannerHeight = [responseContent objectAtIndex:2];
+					floatBannerHeight = [bannerHeight floatValue];
+				}
+				if ([responseContent count] > 3) {
+					bannerURL = [responseContent objectAtIndex:3];
+				}
+				if ([responseContent count] > 4) {
+					campaignID = [responseContent objectAtIndex:4];
+				}
+				
+				bannerSize = CGSizeMake(floatBannerWidth, floatBannerHeight);
 			}
-			if ([responseContent objectAtIndex:1]) {
-				bannerWidth = [responseContent objectAtIndex:1];
-				floatBannerWidth = [bannerWidth floatValue];
-			}
-			if ([responseContent objectAtIndex:2]) {
-				bannerHeight = [responseContent objectAtIndex:2];
-				floatBannerHeight = [bannerHeight floatValue];
-			}
-			if ([responseContent objectAtIndex:3]) {
-				bannerURL = [responseContent objectAtIndex:3];
-			}
-			if ([responseContent objectAtIndex:4]) {
-				campaignID = [responseContent objectAtIndex:4];
-			}
-			bannerSize = CGSizeMake(floatBannerWidth, floatBannerHeight);
 		}
-	}
-
-	for (NSString *key in adUnits) {
-		AdUnit *adUnit = [adUnits objectForKey:key];
-		if ([[@(adUnit.zoneId) stringValue] isEqualToString:zoneID]) {
-			adUnit.bannerID = bannerID;
-			adUnit.campaingID = campaignID;
+		
+		else {
+			isScript = YES;
+			script = [userInfo objectForKey:@"content"];
 			
-			if ([bannerURL length] > 0) {
-				//[adUnit changeBanner:bannerURL ForAdUnit:adUnit WithSize:bannerSize];
-				[adUnit changeBanner:bannerURL];
+			script = [script stringByReplacingOccurrencesOfString:@"<script>" withString:@""];
+			script = [script stringByReplacingOccurrencesOfString:@"</script>" withString:@""];
+			NSLog(@"\n\nSCRIPT:\n%@",script);
+
+			NSRange startRange = [script rangeOfString:@"data" options:NSLiteralSearch];
+			NSRange stopRange = [script rangeOfString:@"href" options:NSLiteralSearch];
+			if (stopRange.location == NSNotFound) {
+				isDIV = YES;
+				stopRange = [script rangeOfString:@"></div>" options:NSLiteralSearch];
 			}
-			break;
+			
+			NSString *scriptData = [script substringWithRange:NSMakeRange(startRange.location , stopRange.location - startRange.location)];
+			scriptData = [scriptData stringByReplacingOccurrencesOfString:@"\" " withString:@"\",\""];
+			scriptData = [scriptData stringByReplacingOccurrencesOfString:@"=\"" withString:@"\":\""];
+			scriptData = [scriptData stringByReplacingOccurrencesOfString:@"' + '" withString:@""];
+			
+			//scriptData = [scriptData stringByReplacingOccurrencesOfString:@" " withString:@""];
+			scriptData = [scriptData substringToIndex:[scriptData length]-2];
+			scriptData = [@"\"" stringByAppendingString:scriptData];
+			scriptData = [scriptData stringByAppendingString:@"}"];
+			scriptData = [@"{" stringByAppendingString:scriptData];
+			
+			__block NSDictionary *scriptJsonDict = [[NSDictionary alloc] init];
+			[WebSpectatorClient jsonParse:scriptData :^(NSDictionary *jsonDict, NSError *error) {
+				if (error == nil) {
+					scriptJsonDict = jsonDict;
+				}
+				else {
+					//NSLog(@"\n\n\nERROR: %@", [error localizedDescription]);
+				}
+			}];
+			
+			bannerID = [scriptJsonDict objectForKey:@"data-bid"];
+			campaignID = [scriptJsonDict objectForKey:@"data-cpid"];
+			//bannerWidth = [scriptJsonDict objectForKey:@"data-bannerWidth"];
+			//bannerHeight = [scriptJsonDict objectForKey:@"data-bannerHeight"];
+			//bannerURL = [scriptJsonDict objectForKey:@"data-contenturl"];
+			//bannerSize = CGSizeMake([bannerWidth floatValue], [bannerHeight floatValue]);
+			
+			if (isDIV) {
+
+				message = [message stringByReplacingOccurrencesOfString:@"<script>" withString:@""];
+				message = [message stringByReplacingOccurrencesOfString:@"</script>" withString:@""];
+				message = [message stringByReplacingOccurrencesOfString:@"\"//" withString:@"\"http://"];
+				
+				message = [@"<!DOCTYPE html><html><body style=\"margin: 0;padding:0;\" ><script>eval(" stringByAppendingString:message];
+				message = [message stringByAppendingString:@".d.content)</script></body></html>"];
+				
+			}
+		}
+		for (NSString *key in adUnits) {
+			AdUnit *adUnit = [adUnits objectForKey:key];
+			if ([[@(adUnit.zoneId) stringValue] isEqualToString:zoneID]) {
+				adUnit.bannerID = bannerID;
+				adUnit.campaingID = campaignID;
+				
+				if (!isScript && [bannerURL length] > 0) {
+					[adUnit changeBanner:bannerURL];
+				}
+				else if (isDIV) {
+					[adUnit loadHTML:message];
+				}
+				else if ([script length] > 0){
+					[adUnit loadScript:script];
+				}
+				break;
+			}
 		}
 	}
 }
@@ -547,9 +614,6 @@ static int timerCounter;
 	NSString *zoneID = [[[infoDict objectForKey:@"d"] objectForKey:@"z"] stringValue];
 	
 	for (NSString *key in adUnits) {
-		
-		
-		
 		AdUnit *adUnit = [adUnits objectForKey:key];
 		if ([[@([adUnit zoneId]) stringValue] isEqualToString:zoneID]) {
 			
@@ -628,6 +692,25 @@ static int timerCounter;
 }
 
 
++ (void) jsonStringFromDictionary:(NSDictionary*) dict OnCompletion:(void (^)(NSString* jsonString, NSError* error)) callback {
+	
+	NSError *error;
+	NSString *jString;
+	NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:&error];
+	
+	if (!jsonData) {
+		if (callback) {
+			callback(nil, error);
+		}
+		
+	} else {
+		jString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+		if (callback) {
+			callback(jString, nil);
+		}
+	}
+}
+
 + (long long) getCurrentDate {
 	
 	return [[NSDate date] timeIntervalSince1970] * 1000;
@@ -684,7 +767,7 @@ static int timerCounter;
 
 - (void) onSubscribed:(OrtcClient *) ortc channel:(NSString*) channel
 {
-	//NSLog(@"Subscribed to: %@", channel);
+	NSLog(@"Subscribed to: %@", channel);
 	[WebSpectatorClient.channels removeObject:channel];
 }
 

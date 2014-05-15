@@ -34,8 +34,10 @@
 }
 
 
-- (void) setUserData {	
-	_storageRef = [[StorageRef alloc] init:APP_KEY privateKey:nil authenticationToken:AUTH_TOKEN];
+- (void) setUserData {
+	
+	_storageRef = [[StorageRef alloc] init:APP_KEY privateKey:nil authenticationToken:AUTH_TOKEN isCluster:YES isSecure:YES url:@"http://storage-balancer.realtime.co/server"];
+	//_storageRef = [[StorageRef alloc] init:APP_KEY privateKey:nil authenticationToken:AUTH_TOKEN];
 	
     [_storageRef onReconnected:^(StorageRef *storage){
         //NSLog(@" - StorageRef onReconnected");

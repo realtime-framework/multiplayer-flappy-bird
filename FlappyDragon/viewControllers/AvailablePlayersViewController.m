@@ -187,8 +187,8 @@
 		
 		if (error == nil && avPlayers != nil){
             // Check if theres a need to order the players array
-			if (_availablePlayers.count > 10) {
-				_availablePlayers = [self filterTenPlayers:avPlayers];
+			if (avPlayers.count > 30) {
+				_availablePlayers = [self filterPlayers:avPlayers];
 			}
 			else {
 				_availablePlayers = avPlayers;
@@ -210,48 +210,39 @@
 }
 
 
-- (NSMutableArray *) filterTenPlayers:(NSArray *) players {
+- (NSMutableArray *) filterPlayers:(NSMutableArray *) players {
 	
-	long long highestDiff = 0;
-	long long lowestDiff = INT_MAX;
+	int lowestDiffIndex = 0;
 	long long score = [[GameData localPlayer] score];
+	long long lowestDiff = INT_MAX;
+	long long diff = INT_MAX;
 	
-	NSMutableArray *scoreDiffs = [[NSMutableArray alloc] init];
-	for (DragonPlayer *player in players)
-	{
-		long long current = player.score;
-		long long diff = llabs(score - current);
-		[scoreDiffs addObject:[NSNumber numberWithLongLong:diff]];
-	}
+	NSSortDescriptor *lowestToHighest = [NSSortDescriptor sortDescriptorWithKey:@"score" ascending:YES];
+	[players sortUsingDescriptors:[NSArray arrayWithObject:lowestToHighest]];
 	
-	NSSortDescriptor *lowestToHighest = [NSSortDescriptor sortDescriptorWithKey:nil ascending:YES];
-	[scoreDiffs sortUsingDescriptors:[NSArray arrayWithObject:lowestToHighest]];
-	
-	lowestDiff = [[scoreDiffs objectAtIndex:0] longLongValue];
-				  
-	if ([scoreDiffs count] > 10) {
-		highestDiff = [[scoreDiffs objectAtIndex:9] longLongValue];
-	}
-	else {
-		highestDiff = [[scoreDiffs objectAtIndex:([scoreDiffs count] -1)] longLongValue];
-	}
-	
-	[scoreDiffs removeAllObjects];
-	for (DragonPlayer *player in players)
-	{
-		long long diff = llabs(score - player.score);
-		if (diff <= highestDiff && player.score >= MIN(score, lowestDiff)) {
-			[scoreDiffs addObject:player];
+	long long currentScore = 0;
+	for (int i = 0; i < [players count]; i++) {
+		
+		DragonPlayer *player = [players objectAtIndex:i];
+		currentScore = player.score;
+		diff = llabs(score - currentScore);
+		
+		if (diff < lowestDiff) {
+			lowestDiff = diff;
+			lowestDiffIndex = i;
 		}
 	}
 	
-	lowestToHighest = [NSSortDescriptor sortDescriptorWithKey:@"score" ascending:YES];
-	[scoreDiffs sortUsingDescriptors:[NSArray arrayWithObject:lowestToHighest]];
-	
-	if ([scoreDiffs count] > 11) {
-		[scoreDiffs removeObjectsInRange:(NSRange){11, ([scoreDiffs count] - 11)}];
+	int lastIndex = ([players count] - 1);
+	int rangeLength = MIN(30, lastIndex);
+	int startLocation = MAX(lowestDiffIndex - (rangeLength/2), 0);
+	if ((startLocation + rangeLength) > lastIndex) {
+		startLocation = lastIndex - rangeLength;
 	}
-	return scoreDiffs;
+	
+	players = (NSMutableArray *)[players subarrayWithRange:NSMakeRange(startLocation, rangeLength)];
+	
+	return players;
 }
 
 

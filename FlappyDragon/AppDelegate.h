@@ -11,6 +11,13 @@
 #import "GameViewController.h"
 #import "RootViewController.h"
 
+
+#define BANNER_Z_ID_2 6760
+#define BANNER_Z_ID 6036
+#define SPONSOR_Z_ID 6038
+#define BLOCK_Z_ID 6039
+#define SPONSOR2_Z_ID 6527
+
 @interface AppDelegate : RealtimePushAppDelegate
 
 
@@ -23,3 +30,4 @@
 
 
 @end
+

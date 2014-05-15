@@ -25,7 +25,7 @@
 
 #define COMMUNICATION_SERVER @"http://ortc-developers.realtime.co/server/ssl/2.1"
 #define COMMUNICATION_AUTH_TOKEN @"FlyingBrands"
-#define COMMUNICATION_APP_KEY @"[YOUR_REALTIME_APPKEY_HERE]"
+#define COMMUNICATION_APP_KEY @"[YOUR_APPLICATION_KEY_HERE]"
 
 @property OrtcClient* client;
 @property id <CommunicationDelegate> onAction;

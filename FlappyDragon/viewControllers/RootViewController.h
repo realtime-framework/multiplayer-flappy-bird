@@ -6,14 +6,12 @@
 //  Copyright (c) 2014 Realtime.co. All rights reserved.
 //
 
-#define BANNER_Z_ID 6036
-#define SPONSOR_Z_ID 6038
-#define BLOCK_Z_ID 6039
 
-@interface RootViewController : UIViewController <UITextFieldDelegate>
+@interface RootViewController : UIViewController <UITextFieldDelegate, UIWebViewDelegate>
 
 
 @property (weak, nonatomic) IBOutlet UILabel *nickLabel;
+@property (weak, nonatomic) IBOutlet UILabel *scoreLabel;
 @property (weak, nonatomic) IBOutlet UITextField *directChallengeTextField;
 @property (weak, nonatomic) IBOutlet UIView *contentView;
 @property (weak, nonatomic) IBOutlet UIView *overlayView;
@@ -38,6 +36,8 @@
 @property (readwrite, nonatomic) BOOL viewDidAppearOnce;
 
 @property (weak, nonatomic) IBOutlet UIImageView *imageBanner;
+
+@property (weak, nonatomic) IBOutlet UIWebView *bannerWebView;
 
 
 - (IBAction) tweetAction:(id)sender;

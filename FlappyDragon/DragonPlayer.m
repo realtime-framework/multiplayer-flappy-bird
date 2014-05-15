@@ -32,7 +32,7 @@ NSString* const PLAYER_STATE_OFFLINE = @"offline";
         self.gameId = [json objectForKey:@"gameId"];
 		self.challenges = [[json objectForKey:@"challenges"] intValue];
 		self.state = [json objectForKey:@"state"];
-        self.score = 0;
+        self.score = [[json objectForKey:@"score"] longLongValue];
     }
     
     return self;
@@ -69,6 +69,7 @@ NSString* const PLAYER_STATE_OFFLINE = @"offline";
         [playerRef get:^(ItemSnapshot *success) {
 			self.state = [[success val] objectForKey:@"state"];
 			self.challenges = [[[success val] objectForKey:@"challenges"] intValue];
+			self.score = [[[success val] objectForKey:@"score"] longLongValue];
 			callback(nil);
         } error:^(NSError *error) {
             callback(error);

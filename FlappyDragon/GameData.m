@@ -265,8 +265,9 @@ static Game* currentGame = nil;
                 }else{
 					if(players && players.count > 0){
 						[players addObjectsFromArray:offlinePlayers];
-						NSUInteger maxRange = players.count < 10 ? players.count : 10;
-						callback((NSMutableArray*)[players subarrayWithRange:NSMakeRange(0, maxRange)],nil);
+						//NSUInteger maxRange = players.count < 10 ? players.count : 10;
+						//callback((NSMutableArray*)[players subarrayWithRange:NSMakeRange(0, maxRange)],nil);
+						callback(players ,nil);
 					}else{
 						callback(players,nil);
 					}

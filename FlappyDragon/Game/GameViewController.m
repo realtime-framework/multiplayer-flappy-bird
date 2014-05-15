@@ -32,7 +32,10 @@
 	SKView *skView = (SKView *)[self view];
 	[skView setShowsFPS:NO];
 	[skView setShowsNodeCount:NO];
-	    
+	
+    //NSLog(@"Bounds: h %f w %f",skView.bounds.size.height,skView.bounds.size.width);
+    
+	//GameScene *scene = [GameScene sceneWithSize:skView.bounds.size];
     scene = [GameScene sceneWithSize:CGSizeMake(320.0, 480.0)];
 	[scene setScaleMode:SKSceneScaleModeAspectFill];
 	scene.name = @"GameScene";

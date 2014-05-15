@@ -19,7 +19,13 @@
 
 - (id) initWithPLaceholder:(NSObject *) adUnit AndZone:(int) zone;
 - (void) changeBanner:(NSString *) bannerURL;
+- (void) loadScript:(NSString *) script;
+- (void) loadHTML:(NSString *)htmlString;
 - (void) destroy;
+
+
+
+
 
 
 @end

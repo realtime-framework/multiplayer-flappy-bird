@@ -14,9 +14,7 @@
 #import "AdUnitUIkit.h"
 #import "WebSpectatorMobile.h"
 
-#define BANNER_Z_ID 6036
-#define SPONSOR_Z_ID 6038
-#define BLOCK_Z_ID 6039
+
 
 @interface WaitingViewController : UIViewController <CommunicationDelegate>
 

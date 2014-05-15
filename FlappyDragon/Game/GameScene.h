@@ -15,12 +15,12 @@
 #import "AdUnit.h"
 #import "AdUnitSpriteKit.h"
 #import "WebSpectatorMobile.h"
-
+/*
 #define BANNER_Z_ID 6036
 #define SPONSOR_Z_ID 6038
 #define SPONSOR2_Z_ID 6527
 #define BLOCK_Z_ID 6039
-
+*/
 @interface GameScene : SKScene <SKPhysicsContactDelegate, CommunicationDelegate>
 
 

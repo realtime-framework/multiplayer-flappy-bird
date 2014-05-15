@@ -63,8 +63,7 @@
 	
 	_timerCount ++;
 	
-	CGPoint nodePos = self.placeHolder.position;
-	
+	//CGPoint nodePos = self.placeHolder.position;
 	BOOL visible = self.visible;
 	if (!self.placeHolder.hidden) {
 		

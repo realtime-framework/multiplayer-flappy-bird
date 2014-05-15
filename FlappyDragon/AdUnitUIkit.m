@@ -10,9 +10,9 @@
 #import "AdUnitUIkit.h"
 #import "WebSpectatorClient.h"
 
-@interface AdUnitUIkit ()
+@interface AdUnitUIkit () <UIWebViewDelegate>
 
-@property UIImageView *placeHolder;
+@property UIView *placeHolder;
 @property (nonatomic)  NSTimer *timer;
 @property (nonatomic)  int timerCount;
 
@@ -29,9 +29,9 @@
     return self;
 }
 
-- (id) initWithPLaceholder:(UIImageView *) adUnit AndZone:(int) zone {
+- (id) initWithPLaceholder:(UIView *) adUnit AndZone:(int) zone {
 	
-	if (![adUnit isKindOfClass:[UIImageView class]]) {
+	if (![adUnit isKindOfClass:[UIView class]]) {
 		[self doesNotRecognizeSelector:_cmd];
 		return nil;
 	} else {
@@ -41,6 +41,9 @@
 			self.placeHolder = adUnit;
 			self.zoneId = zone;
 			self.unitID = [WebSpectatorClient generateRandomString:8];
+			if ([adUnit isKindOfClass:[UIWebView class]]) {
+				((UIWebView *)adUnit).delegate = self;
+			}
 			[self start];
 		}
 		return self;
@@ -61,6 +64,10 @@
 	_timer = nil;
 }
 
+- (void) destroy {
+    [self stopTimer];
+}
+
 
 /*
  - (void)didAddSubview:(UIView *)subview
@@ -74,11 +81,8 @@
 	check view.hidden
     check hierarchy, checking view.superview == nil
     check the bounds of a view to see if it is on screen
+	[[self.placeHolder.layer presentationLayer] frame];
 	*/
-	
-	
-	// [[self.placeHolder.layer presentationLayer] frame];
-	
 	
 	_timerCount ++;
 	
@@ -156,18 +160,46 @@
 
 	[AdUnitUIkit imageWithURLString:bannerURL andBlock:^(UIImage *image) {
 		if (image) {
-			[self.placeHolder setImage:image];
+			if ([self.placeHolder respondsToSelector:@selector(setImage:)]) {
+				[self.placeHolder performSelector:@selector(setImage:) withObject:image];
+			}
 		}
 	}];
 }
 
-- (void) setBannerImage:(UIImage *) image {
+
+- (void) loadScript:(NSString *) script {
 	
-	if ([_placeHolder isKindOfClass:[UIImageView class]]) {
-		[_placeHolder setImage:image];
+	script = [script stringByReplacingOccurrencesOfString:@"\"//" withString:@"\"http://"];
+	 
+	if ([self.placeHolder respondsToSelector:@selector(stringByEvaluatingJavaScriptFromString:)]) {
+	 
+		NSString *padding = @"document.body.style.margin='0';document.body.style.padding = '0'";
+	 
+		[self.placeHolder performSelector:@selector(stringByEvaluatingJavaScriptFromString:) withObject:@"document.body.innerHTML='';"];
+		[self.placeHolder performSelector:@selector(stringByEvaluatingJavaScriptFromString:) withObject:script];
+		[self.placeHolder performSelector:@selector(stringByEvaluatingJavaScriptFromString:) withObject:padding];
+	 }
+}
+
+
+- (void) loadHTML:(NSString *)htmlString {
+	
+	if ([self.placeHolder respondsToSelector:@selector(stringByEvaluatingJavaScriptFromString:)]) {
+		[self.placeHolder performSelector:@selector(stringByEvaluatingJavaScriptFromString:) withObject:@"document.body.innerHTML='';"];
+		
+		if ([self.placeHolder respondsToSelector:@selector(loadHTMLString:baseURL:)]) {
+			[((UIWebView *)self.placeHolder) loadHTMLString:htmlString baseURL:[NSURL URLWithString:@"http:////www.google.com"]];
+		}
 	}
 }
 
+- (void) setBannerImage:(UIImage *) image {
+	
+	if ([self.placeHolder respondsToSelector:@selector(setImage:)]) {
+		[self.placeHolder performSelector:@selector(setImage:) withObject:image];
+	}
+}
 
 
 + (void) imageWithURLString:(NSString *)urlString andBlock:(void (^)(UIImage *imageData)) processImage
@@ -191,8 +223,38 @@
 	});
 }
 
-- (void) destroy {
-    [self stopTimer];
+
+
+#pragma mark - WebView delegate
+
+- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
+	
+	NSLog(@"URL: %@ | %@ ", request.URL, [request.URL scheme]);
+	//NSLog(@"URL fragment: %@ ", [request.URL fragment]);
+	//NSLog(@"URL host: %@ ", [request.URL host]);
+	//NSLog(@"URL parameterString: %@ ", [request.URL parameterString]);
+	NSLog(@"URL pathComponents: %@ ", [request.URL pathComponents]);
+	//NSLog(@"URL relativePath: %@ ", [request.URL relativePath]);
+	
+	NSArray *relativePath = [request.URL pathComponents];
+	if ([relativePath count] > 1) {
+		if ([[relativePath objectAtIndex:1] isEqualToString:@"click"] || [[relativePath objectAtIndex:1] isEqualToString:@"aclk"]) {
+			
+			[[UIApplication sharedApplication] openURL:request.URL];
+			return NO; // webView dont load the URL
+		}
+		else {
+			return YES;
+		}
+	}
+	// [[UIApplication sharedApplication] openURL:[NSURL UrlWithString:@"telprompt://0123456789"]]
+	else if ([[request.URL scheme] isEqualToString:@"tel"]) {
+		[[UIApplication sharedApplication] openURL:request.URL];
+		return NO; // webView dont load the URL
+	}
+	
+	return YES; // webView load the URL
 }
+
 
 @end
